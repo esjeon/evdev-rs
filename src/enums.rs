@@ -53,6 +53,7 @@ pub enum EventCode {
     EV_PWR,
     EV_FF_STATUS(EV_FF),
     EV_MAX,
+    Unknown { event_type: u32, event_code: u32 },
 }
 
 #[allow(non_camel_case_types)]
