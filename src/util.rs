@@ -91,7 +91,10 @@ pub fn event_code_to_int(event_code: &EventCode) -> (c_uint, c_uint) {
 }
 
 pub fn int_to_event_code(event_type: c_uint, event_code: c_uint) -> Option<EventCode> {
-    let ev_type: EventType = int_to_event_type(event_type as u32).unwrap();
+    let ev_type: EventType = match int_to_event_type(event_type as u32) {
+        Some(v) => v,
+        None => return None,
+    };
 
     match ev_type {
         EventType::EV_SYN =>    match int_to_ev_syn(event_code as u32) {
@@ -141,6 +144,13 @@ pub fn int_to_event_code(event_type: c_uint, event_code: c_uint) -> Option<Event
                                     Some(k) => Some(EventCode::EV_FF_STATUS(k)),
                                 },
         EventType::EV_MAX =>    Some(EventCode::EV_MAX),
+    }
+}
+
+pub fn int_to_event_code_permissive(event_type: c_uint, event_code: c_uint) -> EventCode {
+    match int_to_event_code(event_type, event_code) {
+        Some(v) => v,
+        None => EventCode::Unknown { event_type, event_code },
     }
 }
 
