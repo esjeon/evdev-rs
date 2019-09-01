@@ -140,6 +140,10 @@ pub fn int_to_event_code(event_type: c_uint, event_code: c_uint) -> Option<Event
                                     None => None,
                                     Some(k) => Some(EventCode::EV_FF_STATUS(k)),
                                 },
+        EventType::EV_UNK =>    Some(EventCode::EV_UNK {
+                                    event_type: event_type as u32,
+                                    event_code: event_code as u32,
+                                }),
         EventType::EV_MAX =>    Some(EventCode::EV_MAX),
     }
 }
