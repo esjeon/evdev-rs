@@ -2,6 +2,7 @@
 
 #[allow(non_camel_case_types)]
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[repr(u32)]
 pub enum EventType {
     EV_SYN = 0,
     EV_KEY = 1,
@@ -15,8 +16,17 @@ pub enum EventType {
     EV_FF = 21,
     EV_PWR = 22,
     EV_FF_STATUS = 23,
-    EV_UNK,
+    EV_UNK(u32) = 0xDEAD,
     EV_MAX = 31,
+}
+
+impl EventType {
+    pub fn raw(&self) -> u32 {
+        match self {
+            Self::EV_UNK(v) => *v,
+            _ => unsafe { *(self as *const Self as *const u32) },
+        }
+    }
 }
 
 pub fn int_to_event_type(code: u32) -> Option<EventType> {
@@ -33,7 +43,7 @@ pub fn int_to_event_type(code: u32) -> Option<EventType> {
         21 => Some(EventType::EV_FF),
         22 => Some(EventType::EV_PWR),
         23 => Some(EventType::EV_FF_STATUS),
-        c if c < 31 => Some(EventType::EV_UNK),
+        c if c < 31 => Some(EventType::EV_UNK(c)),
         31 => Some(EventType::EV_MAX),
         _ => None
     }
@@ -1587,6 +1597,32 @@ pub fn int_to_bus_type(code: u32) -> Option<BusType> {
         30 => Some(BusType::BUS_CEC),
         31 => Some(BusType::BUS_INTEL_ISHTP),
         _ => None
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    // Note this useful idiom: importing names from outer (for mod tests) scope.
+    use super::*;
+
+    #[test]
+    fn test_event_type_raw() {
+        assert_eq!(EventType::EV_SYN.raw(), 0);
+        assert_eq!(EventType::EV_SYN.raw(), 0);
+        assert_eq!(EventType::EV_KEY.raw(), 1);
+        assert_eq!(EventType::EV_REL.raw(), 2);
+        assert_eq!(EventType::EV_ABS.raw(), 3);
+        assert_eq!(EventType::EV_MSC.raw(), 4);
+        assert_eq!(EventType::EV_SW .raw(), 5);
+        assert_eq!(EventType::EV_LED.raw(), 17);
+        assert_eq!(EventType::EV_SND.raw(), 18);
+        assert_eq!(EventType::EV_REP.raw(), 20);
+        assert_eq!(EventType::EV_FF .raw(), 21);
+        assert_eq!(EventType::EV_PWR.raw(), 22);
+        assert_eq!(EventType::EV_FF_STATUS.raw(), 23);
+        assert_eq!(EventType::EV_MAX.raw(), 31);
+
+        assert_eq!(EventType::EV_UNK(123).raw(), 123);
     }
 }
 

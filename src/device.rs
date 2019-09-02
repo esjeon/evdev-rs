@@ -266,7 +266,7 @@ impl Device {
     /// available for the sake of maintaining compatibility with libevdev.
     pub fn has_event_type(&self, ev_type: &EventType) -> bool {
         unsafe {
-            raw::libevdev_has_event_type(self.raw, ev_type.clone() as c_uint) != 0
+            raw::libevdev_has_event_type(self.raw, ev_type.raw()) != 0
         }
     }
 
@@ -476,7 +476,7 @@ impl Device {
     pub fn enable_event_type(&self, ev_type: &EventType) -> Result<(), Errno> {
          let result = unsafe {
             raw::libevdev_enable_event_type(self.raw,
-                                            ev_type.clone() as c_uint)
+                                            ev_type.raw())
         };
 
         match result {
@@ -565,7 +565,7 @@ impl Device {
     pub fn disable_event_type(&self, ev_type: &EventType) -> Result<(), Errno> {
          let result = unsafe {
             raw::libevdev_disable_event_type(self.raw,
-                                             ev_type.clone() as c_uint)
+                                             ev_type.raw())
         };
 
         match result {

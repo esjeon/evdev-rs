@@ -1,3 +1,4 @@
+#![feature(arbitrary_enum_discriminant)]
 //! Rust bindings to libevdev, an wrapper for evdev devices.
 //!
 //! This library intends to provide a safe interface to the libevdev library. It
@@ -226,7 +227,7 @@ impl InputEvent {
 
     pub fn is_type(&self, ev_type: &EventType) -> bool {
         unsafe {
-            raw::libevdev_event_is_type(&self.as_raw(), ev_type.clone() as c_uint) == 1
+            raw::libevdev_event_is_type(&self.as_raw(), ev_type.raw()) == 1
         }
     }
 

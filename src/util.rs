@@ -38,48 +38,52 @@ pub fn event_code_to_int(event_code: &EventCode) -> (c_uint, c_uint) {
     let mut ev_code: c_uint = 0;
     match event_code.clone() {
         EventCode::EV_SYN(code) => {
-            ev_type = EventType::EV_SYN as c_uint;
+            ev_type = EventType::EV_SYN.raw();
             ev_code = code as c_uint;
         },
         EventCode::EV_KEY(code) => {
-            ev_type = EventType::EV_KEY as c_uint;
+            ev_type = EventType::EV_KEY.raw();
             ev_code = code as c_uint;
         },
         EventCode::EV_REL(code) => {
-            ev_type = EventType::EV_REL as c_uint;
+            ev_type = EventType::EV_REL.raw();
             ev_code = code as c_uint;
         },
         EventCode::EV_ABS(code) => {
-            ev_type = EventType::EV_ABS as c_uint;
+            ev_type = EventType::EV_ABS.raw();
             ev_code = code as c_uint;
         },
         EventCode::EV_MSC(code) => {
-            ev_type = EventType::EV_MSC as c_uint;
+            ev_type = EventType::EV_MSC.raw();
             ev_code = code as c_uint;
         },
         EventCode::EV_SW(code) => {
-            ev_type = EventType::EV_SW as c_uint;
+            ev_type = EventType::EV_SW .raw();
             ev_code = code as c_uint;
         },
         EventCode::EV_LED(code) => {
-            ev_type = EventType::EV_LED as c_uint;
+            ev_type = EventType::EV_LED.raw();
             ev_code = code as c_uint;
         },
         EventCode::EV_SND(code) => {
-            ev_type = EventType::EV_SND as c_uint;
+            ev_type = EventType::EV_SND.raw();
             ev_code = code as c_uint;
         },
         EventCode::EV_REP(code) => {
-            ev_type = EventType::EV_REP as c_uint;
+            ev_type = EventType::EV_REP.raw();
             ev_code = code as c_uint;
         },
         EventCode::EV_FF(code) => {
-            ev_type = EventType::EV_FF as c_uint;
+            ev_type = EventType::EV_FF.raw();
             ev_code = code as c_uint;
         },
         EventCode::EV_FF_STATUS(code) => {
-            ev_type = EventType::EV_FF_STATUS as c_uint;
+            ev_type = EventType::EV_FF_STATUS.raw();
             ev_code = code as c_uint;
+        },
+        EventCode::EV_UNK{event_type, event_code} => {
+            ev_type = event_type;
+            ev_code = event_code;
         },
         _ => {
             warn!("Event code not found");
@@ -140,7 +144,7 @@ pub fn int_to_event_code(event_type: c_uint, event_code: c_uint) -> Option<Event
                                     None => None,
                                     Some(k) => Some(EventCode::EV_FF_STATUS(k)),
                                 },
-        EventType::EV_UNK =>    Some(EventCode::EV_UNK {
+        EventType::EV_UNK(_) =>    Some(EventCode::EV_UNK {
                                     event_type: event_type as u32,
                                     event_code: event_code as u32,
                                 }),
@@ -151,7 +155,7 @@ pub fn int_to_event_code(event_type: c_uint, event_code: c_uint) -> Option<Event
 impl fmt::Display for EventType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", ptr_to_str(unsafe {
-            raw::libevdev_event_type_get_name(self.clone() as c_uint)
+            raw::libevdev_event_type_get_name(self.raw())
         }).unwrap_or(""))
     }
 }
@@ -195,7 +199,7 @@ impl EventType {
     /// of EV_ABS, or Errno for an invalid type.
     pub fn get_max(ev_type: &EventType) -> Option<i32> {
         let result = unsafe {
-            raw::libevdev_event_type_get_max(ev_type.clone() as c_uint)
+            raw::libevdev_event_type_get_max(ev_type.raw())
         };
 
         match result {
@@ -217,12 +221,12 @@ impl EventCode {
     pub fn from_str(ev_type: &EventType, name: &str) -> Option<EventCode> {
         let name = CString::new(name).unwrap();
         let result = unsafe {
-            raw::libevdev_event_code_from_name(ev_type.clone() as c_uint, name.as_ptr())
+            raw::libevdev_event_code_from_name(ev_type.raw(), name.as_ptr())
         };
 
         match result {
             -1 => None,
-             k => int_to_event_code(ev_type.clone() as u32, k as u32),
+             k => int_to_event_code(ev_type.raw(), k as u32),
         }
     }
 }
@@ -259,7 +263,7 @@ impl Iterator for EventTypeIterator {
                 return None;
             }
             _ => {
-                let mut raw_code = (self.current.clone() as u32) + 1;
+                let mut raw_code = (self.current.raw()) + 1;
                 loop {
                     match int_to_event_type(raw_code) {
                         Some(x) => {
@@ -527,4 +531,3 @@ impl Iterator for InputPropIterator {
         }
     }
 }
-
